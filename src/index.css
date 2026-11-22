@@ -561,3 +561,24 @@ ul { list-style: none; margin: 0; padding: 0; }
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ==========================================================================
+   Fight result (Stage 7 plain text; replaced by the winner card in Stage 10)
+   ========================================================================== */
+
+.result__status {
+  margin: 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.result__status--error { color: var(--danger); }
+
+.fight-debug {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}

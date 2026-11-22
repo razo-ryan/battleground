@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import PlaceholderCard from './PlaceholderCard.jsx'
+import { useFight } from '../hooks/useFight.js'
 import { NAME_MAX, SAME_FIGHTER_ERROR, validateFighters } from '../lib/validation.js'
 
 // Empty and too-short errors wait until the field is blurred, so they don't
@@ -10,7 +10,7 @@ function visibleError(raw, error, touched) {
   return null
 }
 
-function FighterField({ id, label, placeholder, value, onChange, onBlur, error, invalid }) {
+function FighterField({ id, label, placeholder, value, onChange, onBlur, error, invalid, disabled }) {
   const errorId = `${id}-error`
   return (
     <div className="field">
@@ -24,6 +24,7 @@ function FighterField({ id, label, placeholder, value, onChange, onBlur, error, 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
+        disabled={disabled}
         aria-invalid={invalid}
         aria-describedby={error ? errorId : undefined}
       />
@@ -32,11 +33,37 @@ function FighterField({ id, label, placeholder, value, onChange, onBlur, error, 
   )
 }
 
-// Stage 3: fighter inputs and validation. The result below is still placeholder content.
+const IMAGE_SOURCE_TEXT = {
+  saved: 'art reused from BattleDex',
+  generated: 'new art generated',
+  refused: 'art refused (placeholder)',
+}
+
+// Stage 7: plain text result. Cards, loading UI and the reveal arrive in Stages 8–10.
+function FightResult({ result }) {
+  return (
+    <div className="verdict">
+      <p className="verdict__winner">
+        <span className="verdict__label">Winner</span> {result.winner}
+      </p>
+      <p className="verdict__reasoning">{result.reasoning}</p>
+      <ul className="fight-debug">
+        {result.fighters.map((f) => (
+          <li key={f.name}>
+            {f.name}: {IMAGE_SOURCE_TEXT[f.imageSource]}
+            {f.isSaved ? ' · in BattleDex' : ' · not saved'}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export default function Arena() {
   const [fighterA, setFighterA] = useState('')
   const [fighterB, setFighterB] = useState('')
   const [touched, setTouched] = useState({ a: false, b: false })
+  const { status, result, error, fight, isLoading } = useFight()
 
   const validation = validateFighters(fighterA, fighterB)
   const errorA = visibleError(fighterA, validation.a, touched.a)
@@ -47,12 +74,12 @@ export default function Arena() {
 
   function handleSubmit(e) {
     e.preventDefault()
+    if (isLoading) return
     if (!validation.valid) {
       setTouched({ a: true, b: true })
       return
     }
-    // Stage 7 replaces this with the real fight flow.
-    console.log('Fight:', fighterA.trim(), 'vs', fighterB.trim())
+    fight(fighterA, fighterB)
   }
 
   return (
@@ -69,6 +96,7 @@ export default function Arena() {
           onBlur={() => setTouched((t) => ({ ...t, a: true }))}
           error={errorA}
           invalid={Boolean(errorA) || validation.same}
+          disabled={isLoading}
         />
 
         <span className="vs-badge" aria-hidden="true"><span>VS</span></span>
@@ -82,35 +110,28 @@ export default function Arena() {
           onBlur={() => setTouched((t) => ({ ...t, b: true }))}
           error={errorB}
           invalid={Boolean(errorB)}
+          disabled={isLoading}
         />
 
         <button
           type="submit"
           className="btn btn--primary fight-form__submit"
-          disabled={!validation.valid}
+          disabled={!validation.valid || isLoading}
+          aria-busy={isLoading}
         >
-          Fight!
+          {isLoading ? 'Fighting…' : 'Fight!'}
         </button>
       </form>
 
-      <div className="result">
-        <div className="result__cards">
-          <PlaceholderCard name="Goku" hue={28} winner />
-          <span className="vs-badge vs-badge--large" aria-hidden="true"><span>VS</span></span>
-          <PlaceholderCard name="Superman" hue={215} />
+      {status !== 'idle' && (
+        <div className="result" aria-live="polite">
+          {status === 'loading' && <p className="result__status">The judge is deciding…</p>}
+          {status === 'error' && (
+            <p className="result__status result__status--error" role="alert">{error.message}</p>
+          )}
+          {status === 'result' && <FightResult result={result} />}
         </div>
-
-        <div className="verdict">
-          <p className="verdict__winner">
-            <span className="verdict__label">Winner</span> Goku
-          </p>
-          <p className="verdict__reasoning">
-            Placeholder reasoning. Goku's raw speed and ki techniques let him close the gap before
-            Superman can line up a decisive blow, and his habit of powering up mid-fight tips a
-            close battle in his favour.
-          </p>
-        </div>
-      </div>
+      )}
     </section>
   )
 }
