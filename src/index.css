@@ -246,8 +246,13 @@ ul { list-style: none; margin: 0; padding: 0; }
   color: var(--text-muted);
 }
 
+/* Always rendered with reserved height, so a message appearing doesn't shift the layout. */
 .field__error {
+  --error-line: 1.25rem;
+  margin: 0;
+  min-height: var(--error-line);
   font-size: 0.8rem;
+  line-height: var(--error-line);
   color: var(--danger);
 }
 
@@ -349,7 +354,8 @@ ul { list-style: none; margin: 0; padding: 0; }
   gap: var(--space-4) var(--space-5);
 }
 
-.fight-form .vs-badge { margin-bottom: 4px; }
+/* Lift the badge past the error line (1.25rem + field gap) so it centres on the inputs. */
+.fight-form .vs-badge { margin-bottom: calc(1.25rem + var(--space-2) + 4px); }
 
 .fight-form__submit {
   grid-column: 1 / -1;
