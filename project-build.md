@@ -219,6 +219,8 @@ Each stage lists:
 - Pass fighter names to Claude only inside the prompt's delimiters, never mixed into the system prompt.
 - Build the schema from the same cleaned names sent to Claude (after `<` and `>` are stripped), so `winner` always matches.
 - Validate the response with the schema on the server and return a verdict error if it fails, so the front-end shows **Try again**.
+- Reject fights where the two names are identical after cleaning (e.g. "<Goku>" vs "Goku"), since `z.enum` would then accept either answer.
+- Reject a verdict whose reasoning looks like a prompt leak (contains distinctive phrases from the system prompt) or is far longer than 4 sentences.
 - Run the Stage 5 test matchups, including the injection attempts.
 
 ### Stage 17: Image function
