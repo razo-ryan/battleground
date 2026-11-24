@@ -911,13 +911,285 @@ ul { list-style: none; margin: 0; padding: 0; }
   from { opacity: 0; transform: translateY(10px); }
 }
 
+/* ==========================================================================
+   Save to BattleDex (Stage 11)
+   ========================================================================== */
+
+.winner-card {
+  --save-h: 32px; /* height of the save row, so the VS badge can centre on the cards */
+}
+
+.winner-card__fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.winner-card__vs { margin-bottom: calc(var(--save-h) + var(--space-3)); }
+
+.save-fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  width: var(--card-w);
+  min-height: var(--save-h);
+  text-align: center;
+  /* appears with the verdict, once the cards have flipped */
+  animation: reveal-rise 0.5s var(--ease) calc(var(--reveal-settle) + 0.2s) backwards;
+}
+
+.save-fighter__btn {
+  min-height: var(--save-h);
+  white-space: nowrap;
+}
+
+.save-fighter__btn:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.save-fighter__saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--save-h);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.save-fighter__saved svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16;
+  animation: loading-draw 0.35s var(--ease) both;
+}
+
+.save-fighter__error {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--danger);
+}
+
+@media (max-width: 640px) {
+  .save-fighter__btn {
+    padding-inline: var(--space-2);
+    font-size: 0.72rem;
+    white-space: normal;
+  }
+}
+
+/* ==========================================================================
+   BattleDex grid (Stage 12)
+   ========================================================================== */
+
+.dex-grid__item { animation: reveal-rise 0.4s var(--ease) backwards; }
+
+.dex-card { position: relative; }
+
+/* Shimmering overlay while new art is being painted */
+.dex-card__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--card-radius);
+  background: rgb(11 13 16 / 0.6);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.dex-card__overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, var(--accent-soft) 45%, rgb(255 255 255 / 0.08) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: loading-shimmer 1.8s var(--ease) infinite;
+}
+
+.dex-card.is-busy .card { border-color: var(--accent); }
+
+.dex-grid__actions--confirm {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  max-width: 180px;
+}
+
+.dex-grid__confirm-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.btn--danger.is-armed {
+  color: var(--danger);
+  border-color: rgb(255 107 107 / 0.5);
+}
+
+.dex-grid__message {
+  max-width: 160px;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.dex-grid__message:empty { display: none; }
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+
+.empty-state__card {
+  width: 72px;
+  margin-bottom: var(--space-2);
+  opacity: 0.7;
+}
+
+.empty-state__title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state strong { color: var(--text); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dex-grid__item { animation: none; }
+}
+
+/* ==========================================================================
+   Mock API panel (dev only)
+   ========================================================================== */
+
+.mock-panel {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 10;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--space-4));
+  font-size: 0.85rem;
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.5);
+}
+
+.mock-panel__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.mock-panel__toggle::-webkit-details-marker { display: none; }
+.mock-panel__toggle:hover { color: var(--text); }
+
+.mock-panel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.mock-panel__dot.is-active {
+  background: var(--danger);
+  box-shadow: 0 0 8px rgb(255 107 107 / 0.6);
+}
+
+.mock-panel__body {
+  display: grid;
+  gap: var(--space-3);
+  width: 240px;
+  max-width: 100%;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.mock-panel__note {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.mock-panel__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.mock-panel__row input { accent-color: var(--accent); }
+
+.mock-panel__group {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mock-panel__group legend {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mock-panel__names {
+  margin-top: var(--space-1);
+  padding: 6px var(--space-2);
+  font-size: 0.85rem;
+}
+
+/* Hidden visually but still read by screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal,
   .reveal__inner,
   .reveal--loser .reveal__face--front,
   .reveal--winner .card,
   .winner-card__vs,
-  .winner-card__verdict {
+  .winner-card__verdict,
+  .save-fighter {
     animation: none;
   }
 }

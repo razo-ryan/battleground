@@ -57,6 +57,37 @@ function writeAll(characters) {
     if (isQuotaError(err)) throw new BattleDexFullError()
     throw err
   }
+  notify()
+}
+
+// --- Change notifications ---------------------------------------------------
+// Lets the UI re-render whenever the BattleDex changes (see useBattleDex).
+// getSnapshot returns a cached list that only changes after a write, so React's
+// useSyncExternalStore sees a stable value between changes.
+
+const listeners = new Set()
+let snapshot = null
+
+function notify() {
+  snapshot = null
+  listeners.forEach((listener) => listener())
+}
+
+export function subscribe(listener) {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+export function getSnapshot() {
+  if (!snapshot) snapshot = getCharacters()
+  return snapshot
+}
+
+// Another tab changed the BattleDex.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY || e.key === null) notify()
+  })
 }
 
 function newId() {

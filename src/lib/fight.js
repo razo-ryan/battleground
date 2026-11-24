@@ -1,6 +1,6 @@
 // Runs one fight end to end: BattleDex lookup, then the verdict and any missing
-// images in parallel. The result lives in memory only. Nothing is saved here;
-// the user saves fighters individually from the result (Stage 11).
+// images in parallel. The result lives in memory only. Nothing is saved
+// automatically; the user saves fighters one at a time (saveFighter in fighters.js).
 
 import { getVerdict, generateImage } from '../api/index.js'
 import { findCharacter } from './storage.js'
