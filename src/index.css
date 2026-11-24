@@ -370,7 +370,7 @@ ul { list-style: none; margin: 0; padding: 0; }
   border-top: 1px solid var(--border);
 }
 
-.result__cards {
+.winner-card__cards {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,23 +452,54 @@ ul { list-style: none; margin: 0; padding: 0; }
   object-fit: cover;
 }
 
-.card__initials {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: calc(var(--card-w) * 0.24);
-  color: rgb(255 255 255 / 0.75);
+/* Placeholder art (refused image): a silhouette on a hue picked from the name */
+.card__silhouette {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 72%;
+  transform: translateX(-50%);
+  fill: hsl(var(--art-hue) 20% 6% / 0.8);
+  filter: drop-shadow(0 0 14px hsl(var(--art-hue) 60% 55% / 0.35));
 }
 
+.card__no-art {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgb(0 0 0 / 0.45);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+}
+
+/* Name banner: a plate that overlaps the bottom edge of the art */
 .card__name {
-  padding: 10px var(--space-2) 6px;
+  position: relative;
+  z-index: 1;
+  margin: -14px var(--space-2) 2px;
+  padding: 6px var(--space-2);
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.2;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background: linear-gradient(180deg, #232a33, #171b21);
+  border: 1px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.45);
 }
+
+.card--placeholder .card__name { border-top-color: var(--border-strong); }
+.card--winner .card__name { border-top-color: var(--winner); }
 
 .card--winner {
   border-color: var(--winner);
@@ -540,9 +571,9 @@ ul { list-style: none; margin: 0; padding: 0; }
 
   .fight-form__submit { width: 100%; min-width: 0; }
 
-  .result__cards { gap: var(--space-4); }
+  .winner-card__cards { gap: var(--space-4); }
 
-  .result .card { --card-w: min(140px, calc((100vw - 130px) / 2)); }
+  .reveal { --card-w: min(140px, calc((100vw - 130px) / 2)); }
 
   .result .vs-badge--large { width: 32px; height: 32px; font-size: 0.65rem; }
 
@@ -563,7 +594,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 }
 
 /* ==========================================================================
-   Fight result (Stage 7 plain text; replaced by the winner card in Stage 10)
+   Fight result status and dev info
    ========================================================================== */
 
 .result__status {
@@ -581,4 +612,312 @@ ul { list-style: none; margin: 0; padding: 0; }
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--text-faint);
+}
+
+/* ==========================================================================
+   Fight loading (Stage 8)
+   Face-down card slots with a foil shimmer while art is pending, a pulsing
+   VS badge, bouncing dots for the judge and a progress bar. Each part flips
+   to an accent "done" state as it finishes. Reduced motion stops the loops
+   (global rule above); the status text still updates.
+   ========================================================================== */
+
+.fight-loading {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+  animation: loading-enter 0.4s var(--ease) both;
+}
+
+.fight-loading__cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+}
+
+.loading-slot {
+  --card-w: 160px;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  width: var(--card-w);
+}
+
+/* Face-down card back, shared by the loading slots and the winner card flip */
+.card-back {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: var(--card-ratio);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--card-radius);
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.025) 0 6px, transparent 6px 12px),
+    linear-gradient(160deg, #1f252d, #14181d);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.4);
+}
+
+/* diamond emblem in the middle of the card back */
+.card-back__mark {
+  width: 34%;
+  aspect-ratio: 1;
+  border: 2px solid var(--accent);
+  border-radius: 4px;
+  opacity: 0.6;
+  box-shadow: 0 0 16px var(--accent-glow);
+  transform: rotate(45deg);
+}
+
+.loading-slot__card {
+  margin-bottom: var(--space-2);
+  animation: loading-float 2.4s ease-in-out infinite;
+  transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.loading-slot:nth-child(3) .loading-slot__card { animation-delay: -1.2s; }
+
+/* foil shimmer sweeping across the card */
+.loading-slot__card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, var(--accent-soft) 45%, rgb(255 255 255 / 0.08) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: loading-shimmer 1.8s var(--ease) infinite;
+}
+
+.loading-slot__mark { animation: loading-spin 3s linear infinite; }
+
+.loading-slot.is-done .loading-slot__card {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 28px var(--accent-soft), 0 12px 30px rgb(0 0 0 / 0.4);
+  animation: loading-pop 0.35s var(--ease);
+}
+
+.loading-slot.is-done .loading-slot__card::after { animation: none; opacity: 0; }
+.loading-slot.is-done .loading-slot__mark { animation: none; transform: rotate(45deg); opacity: 1; }
+
+.loading-slot__name {
+  max-width: 100%;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loading-status,
+.loading-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.loading-slot.is-done .loading-status,
+.loading-verdict.is-done { color: var(--accent); }
+
+.loading-verdict { font-size: 0.8rem; }
+
+.loading-check {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16;
+  animation: loading-draw 0.35s var(--ease) both;
+}
+
+.loading-dots { display: inline-flex; gap: 3px; margin-left: 2px; }
+.loading-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: loading-bounce 1s ease-in-out infinite;
+}
+.loading-dots i:nth-child(2) { animation-delay: 0.15s; }
+.loading-dots i:nth-child(3) { animation-delay: 0.3s; }
+
+.vs-badge--pulse {
+  color: var(--accent);
+  border-color: var(--accent);
+  animation: loading-pulse 1.4s ease-in-out infinite;
+}
+
+.loading-bar {
+  position: relative;
+  width: min(320px, 100%);
+  height: 4px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: 2px;
+}
+
+.loading-bar__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  transform-origin: left;
+  /* a sliver shows before anything finishes, so the bar never looks stalled */
+  transform: scaleX(max(0.06, var(--progress)));
+  transition: transform 0.5s var(--ease);
+}
+
+@keyframes loading-enter {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes loading-float {
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes loading-shimmer {
+  60%, 100% { transform: translateX(100%); }
+}
+
+@keyframes loading-spin {
+  from { transform: rotate(45deg); }
+  to { transform: rotate(405deg); }
+}
+
+@keyframes loading-pop {
+  50% { transform: scale(1.05); }
+}
+
+@keyframes loading-draw {
+  from { stroke-dashoffset: 16; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes loading-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes loading-pulse {
+  50% { box-shadow: 0 0 18px var(--accent-glow); }
+}
+
+@media (max-width: 640px) {
+  .fight-loading__cards { gap: var(--space-4); }
+  .loading-slot { --card-w: min(130px, calc((100vw - 130px) / 2)); }
+  .fight-loading .vs-badge--large { width: 32px; height: 32px; font-size: 0.65rem; }
+}
+
+/* ==========================================================================
+   Winner card (Stage 10)
+   Reveal: both cards slide in face-down from their sides, flip over one after
+   the other, then the loser dims, the winner pulses and the verdict rises in.
+   Every element's resting style is the final state and the keyframes only
+   describe where it starts (fill-mode backwards), so removing the animations
+   under reduced motion simply shows the finished card.
+   ========================================================================== */
+
+.winner-card {
+  --reveal-slide: 0.5s;
+  --reveal-flip: 0.6s;
+  --reveal-settle: 1.5s; /* when the flips have finished */
+}
+
+.reveal {
+  --slide-from: -60px;
+  width: var(--card-w);
+  perspective: 1000px;
+  animation: reveal-slide var(--reveal-slide) var(--ease) backwards;
+}
+
+.reveal--right {
+  --slide-from: 60px;
+  animation-delay: 0.1s;
+}
+
+.reveal__inner {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: reveal-flip var(--reveal-flip) var(--ease) 0.65s backwards;
+}
+
+.reveal--right .reveal__inner { animation-delay: 0.8s; }
+
+.reveal__face {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.reveal__face--back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+.reveal__face--front .card { width: 100%; }
+
+/* After the flip: loser steps back, winner pulses once */
+.reveal--loser .reveal__face--front {
+  opacity: 0.6;
+  filter: grayscale(0.6);
+  transition: opacity 0.2s var(--ease), filter 0.2s var(--ease);
+  animation: reveal-dim 0.4s var(--ease) var(--reveal-settle) backwards;
+}
+
+.reveal--loser:hover .reveal__face--front { opacity: 0.9; filter: none; }
+
+.reveal--winner .card {
+  animation: reveal-glow 0.7s var(--ease) var(--reveal-settle);
+}
+
+.winner-card__vs {
+  animation: reveal-fade 0.4s var(--ease) 0.2s backwards;
+}
+
+.winner-card__verdict {
+  animation: reveal-rise 0.5s var(--ease) calc(var(--reveal-settle) + 0.1s) backwards;
+}
+
+@keyframes reveal-slide {
+  from { opacity: 0; transform: translateX(var(--slide-from)); }
+}
+
+@keyframes reveal-flip {
+  from { transform: rotateY(180deg); }
+}
+
+@keyframes reveal-dim {
+  from { opacity: 1; filter: none; }
+}
+
+@keyframes reveal-glow {
+  40% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 1px var(--winner), 0 0 48px rgb(242 199 107 / 0.35), 0 12px 30px rgb(0 0 0 / 0.4);
+  }
+}
+
+@keyframes reveal-fade {
+  from { opacity: 0; }
+}
+
+@keyframes reveal-rise {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal__inner,
+  .reveal--loser .reveal__face--front,
+  .reveal--winner .card,
+  .winner-card__vs,
+  .winner-card__verdict {
+    animation: none;
+  }
 }

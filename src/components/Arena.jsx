@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useFight } from '../hooks/useFight.js'
+import FightLoading from './FightLoading.jsx'
+import WinnerCard from './WinnerCard.jsx'
 import { NAME_MAX, SAME_FIGHTER_ERROR, validateFighters } from '../lib/validation.js'
 
 // Empty and too-short errors wait until the field is blurred, so they don't
@@ -33,37 +35,11 @@ function FighterField({ id, label, placeholder, value, onChange, onBlur, error, 
   )
 }
 
-const IMAGE_SOURCE_TEXT = {
-  saved: 'art reused from BattleDex',
-  generated: 'new art generated',
-  refused: 'art refused (placeholder)',
-}
-
-// Stage 7: plain text result. Cards, loading UI and the reveal arrive in Stages 8–10.
-function FightResult({ result }) {
-  return (
-    <div className="verdict">
-      <p className="verdict__winner">
-        <span className="verdict__label">Winner</span> {result.winner}
-      </p>
-      <p className="verdict__reasoning">{result.reasoning}</p>
-      <ul className="fight-debug">
-        {result.fighters.map((f) => (
-          <li key={f.name}>
-            {f.name}: {IMAGE_SOURCE_TEXT[f.imageSource]}
-            {f.isSaved ? ' · in BattleDex' : ' · not saved'}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 export default function Arena() {
   const [fighterA, setFighterA] = useState('')
   const [fighterB, setFighterB] = useState('')
   const [touched, setTouched] = useState({ a: false, b: false })
-  const { status, result, error, fight, isLoading } = useFight()
+  const { status, progress, result, error, fight, isLoading } = useFight()
 
   const validation = validateFighters(fighterA, fighterB)
   const errorA = visibleError(fighterA, validation.a, touched.a)
@@ -125,11 +101,14 @@ export default function Arena() {
 
       {status !== 'idle' && (
         <div className="result" aria-live="polite">
-          {status === 'loading' && <p className="result__status">The judge is deciding…</p>}
+          {/* Inputs are disabled while loading, so the typed names match the running fight. */}
+          {status === 'loading' && (
+            <FightLoading names={[fighterA.trim(), fighterB.trim()]} progress={progress} />
+          )}
           {status === 'error' && (
             <p className="result__status result__status--error" role="alert">{error.message}</p>
           )}
-          {status === 'result' && <FightResult result={result} />}
+          {status === 'result' && <WinnerCard result={result} />}
         </div>
       )}
     </section>

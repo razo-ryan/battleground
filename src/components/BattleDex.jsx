@@ -1,13 +1,8 @@
-import PlaceholderCard from './PlaceholderCard.jsx'
+import FighterCard from './FighterCard.jsx'
 
-// Stage 2: hard-coded fighters to show the grid layout.
-const SAMPLE_FIGHTERS = [
-  { name: 'Goku', hue: 28 },
-  { name: 'Superman', hue: 215 },
-  { name: '10 Cows', hue: 120 },
-  { name: 'Darth Vader', hue: 0 },
-  { name: 'A Very Angry Goose', hue: 50 },
-]
+// Stage 2 sample fighters to show the grid layout; the real BattleDex arrives in Stage 12.
+// No images yet, so they show the placeholder art.
+const SAMPLE_FIGHTERS = ['Goku', 'Superman', '10 Cows', 'Darth Vader', 'A Very Angry Goose']
 
 export default function BattleDex() {
   return (
@@ -18,9 +13,9 @@ export default function BattleDex() {
       </div>
 
       <ul className="dex-grid">
-        {SAMPLE_FIGHTERS.map((f) => (
-          <li key={f.name} className="dex-grid__item">
-            <PlaceholderCard name={f.name} hue={f.hue} small />
+        {SAMPLE_FIGHTERS.map((name) => (
+          <li key={name} className="dex-grid__item">
+            <FighterCard name={name} small />
             <div className="dex-grid__actions">
               <button type="button" className="btn btn--ghost btn--sm">Regenerate</button>
               <button type="button" className="btn btn--danger btn--sm">Delete</button>
