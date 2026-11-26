@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { mockSettings } from '../api/index.js'
+import { storageSettings } from '../lib/storage.js'
 
-// Dev-only panel for the mock API failure switches (see src/api/mockSettings.js).
+// Dev-only panel for the mock API failure switches (see src/api/mockSettings.js),
+// plus the "BattleDex is full" switch from the storage layer.
 // Rendered from App.jsx only when import.meta.env.DEV is true, so it never ships
 // in a production build. It edits mockSettings directly; the mocks read it on
 // every call, so a change applies to the next fight.
 //
-// Starts from whatever the URL set (?failVerdict, ?refuse=all, ?refuse=Goku,10 cows).
+// Starts from whatever the URL set (?failVerdict, ?refuse=all, ?refuse=Goku,10 cows, ?dexFull).
 
 function initialMode() {
   if (Array.isArray(mockSettings.refuseImages)) return 'names'
@@ -15,6 +17,7 @@ function initialMode() {
 
 export default function MockPanel() {
   const [failVerdict, setFailVerdict] = useState(mockSettings.failVerdict)
+  const [dexFull, setDexFull] = useState(storageSettings.simulateFull)
   const [mode, setMode] = useState(initialMode)
   const [names, setNames] = useState(
     Array.isArray(mockSettings.refuseImages) ? mockSettings.refuseImages.join(', ') : '',
@@ -37,7 +40,7 @@ export default function MockPanel() {
     applyRefusal('names', value)
   }
 
-  const active = failVerdict || mode !== 'off'
+  const active = failVerdict || mode !== 'off' || dexFull
 
   return (
     <details className="mock-panel">
@@ -91,6 +94,18 @@ export default function MockPanel() {
             />
           )}
         </fieldset>
+
+        <label className="mock-panel__row">
+          <input
+            type="checkbox"
+            checked={dexFull}
+            onChange={(e) => {
+              setDexFull(e.target.checked)
+              storageSettings.simulateFull = e.target.checked
+            }}
+          />
+          BattleDex is full
+        </label>
       </div>
     </details>
   )

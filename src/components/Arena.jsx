@@ -35,11 +35,26 @@ function FighterField({ id, label, placeholder, value, onChange, onBlur, error, 
   )
 }
 
+// Verdict failure. Try again re-runs the same matchup (even if the inputs were
+// edited since), and gets focus so keyboard users land on it: the Fight button
+// was disabled during loading, so focus would otherwise be lost.
+function FightError({ error, names, onRetry }) {
+  return (
+    <div className="fight-error" role="alert">
+      <p className="fight-error__title">No verdict this time</p>
+      <p className="fight-error__message">{error.message}</p>
+      <button type="button" className="btn btn--primary fight-error__retry" onClick={onRetry} autoFocus>
+        Try again<span className="visually-hidden">: {names[0]} vs {names[1]}</span>
+      </button>
+    </div>
+  )
+}
+
 export default function Arena() {
   const [fighterA, setFighterA] = useState('')
   const [fighterB, setFighterB] = useState('')
   const [touched, setTouched] = useState({ a: false, b: false })
-  const { status, progress, result, error, fight, isLoading } = useFight()
+  const { status, names, progress, result, error, fight, retry, isLoading } = useFight()
 
   const validation = validateFighters(fighterA, fighterB)
   const errorA = visibleError(fighterA, validation.a, touched.a)
@@ -101,13 +116,8 @@ export default function Arena() {
 
       {status !== 'idle' && (
         <div className="result" aria-live="polite">
-          {/* Inputs are disabled while loading, so the typed names match the running fight. */}
-          {status === 'loading' && (
-            <FightLoading names={[fighterA.trim(), fighterB.trim()]} progress={progress} />
-          )}
-          {status === 'error' && (
-            <p className="result__status result__status--error" role="alert">{error.message}</p>
-          )}
+          {status === 'loading' && <FightLoading names={names} progress={progress} />}
+          {status === 'error' && <FightError error={error} names={names} onRetry={retry} />}
           {status === 'result' && <WinnerCard result={result} />}
         </div>
       )}

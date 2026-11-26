@@ -50,9 +50,28 @@ function readAll() {
   }
 }
 
-function writeAll(characters) {
+// Dev switch to test the "BattleDex is full" path without filling real storage.
+// Set with ?dexFull in the URL, the Mock API panel, or the console:
+//   battledex.storageSettings.simulateFull = true
+// Like a real full localStorage, only writes that grow the data fail, so
+// deleting fighters (and anything that shrinks the data) still works.
+export const storageSettings = {
+  simulateFull: typeof location !== 'undefined' && new URLSearchParams(location.search).has('dexFull'),
+}
+
+function currentSize() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(characters))
+    return localStorage.getItem(STORAGE_KEY)?.length ?? 0
+  } catch {
+    return 0
+  }
+}
+
+function writeAll(characters) {
+  const json = JSON.stringify(characters)
+  if (storageSettings.simulateFull && json.length > currentSize()) throw new BattleDexFullError()
+  try {
+    localStorage.setItem(STORAGE_KEY, json)
   } catch (err) {
     if (isQuotaError(err)) throw new BattleDexFullError()
     throw err
