@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import FighterCard from './FighterCard.jsx'
+import Window from './Window.jsx'
+import { CheckIcon, VerdictIcon } from './icons.jsx'
 import { useBattleDex } from '../hooks/useBattleDex.js'
 import { saveFighter } from '../lib/fighters.js'
 import { nameKey } from '../lib/validation.js'
@@ -51,7 +53,7 @@ function SaveButton({ fighter, isSaved }) {
     <div className="save-fighter" aria-live="polite">
       {state === 'saved' ? (
         <span className="save-fighter__saved">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" /></svg>
+          <CheckIcon />
           Saved<span className="visually-hidden"> {fighter.name} to BattleDex</span>
         </span>
       ) : (
@@ -76,9 +78,7 @@ function RevealSlot({ fighter, isWinner, isSaved, side }) {
     <div className="winner-card__fighter">
       <div className={`reveal reveal--${side} ${isWinner ? 'reveal--winner' : 'reveal--loser'}`}>
         <div className="reveal__inner">
-          <div className="reveal__face reveal__face--back card-back" aria-hidden="true">
-            <span className="card-back__mark" />
-          </div>
+          <div className="reveal__face reveal__face--back card-back" aria-hidden="true" />
           <div className="reveal__face reveal__face--front">
             <FighterCard name={fighter.name} image={fighter.image} winner={isWinner} />
           </div>
@@ -102,7 +102,15 @@ export default function WinnerCard({ result }) {
         <RevealSlot fighter={b} isWinner={b.name === result.winner} isSaved={isSaved(b)} side="right" />
       </div>
 
-      <div className="verdict winner-card__verdict">
+      <Window
+        idle
+        className="verdict winner-card__verdict"
+        title="Verdict"
+        titleId="verdict-title"
+        heading="h3"
+        icon={<VerdictIcon />}
+        controls={['close']}
+      >
         <p className="verdict__winner">
           <span className="verdict__label">Winner</span> {result.winner}
         </p>
@@ -113,7 +121,7 @@ export default function WinnerCard({ result }) {
             <li key={f.name}>{f.name}: {IMAGE_SOURCE_TEXT[f.imageSource]}</li>
           ))}
         </ul>
-      </div>
+      </Window>
     </div>
   )
 }

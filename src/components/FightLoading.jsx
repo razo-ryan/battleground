@@ -1,25 +1,24 @@
+import { CheckIcon } from './icons.jsx'
+
 // Stage 8: loading UI shown in the Arena while a fight runs.
 // Two face-down card slots (one per fighter's art) and a verdict row, each with
 // its own status, so you can see what's still pending. Art stays hidden here;
 // the reveal happens in Stage 10 once everything is ready.
 
-function Check() {
-  return (
-    <svg className="loading-check" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M3.5 8.5l3 3 6-7" />
-    </svg>
-  )
+// The progress bar is drawn as arcade-style segments.
+const SEGMENTS = 12
+
+function Cursor() {
+  return <span className="cursor" aria-hidden="true" />
 }
 
 function ArtSlot({ name, done }) {
   return (
     <div className={`loading-slot${done ? ' is-done' : ''}`}>
-      <div className="card-back loading-slot__card" aria-hidden="true">
-        <span className="card-back__mark loading-slot__mark" />
-      </div>
+      <div className="card-back loading-slot__card" aria-hidden="true" />
       <p className="loading-slot__name" title={name}>{name}</p>
       <p className="loading-status">
-        {done ? <><Check /> Art ready</> : 'Painting art…'}
+        {done ? <><CheckIcon className="loading-check" /> Art ready</> : <>Painting art<Cursor /></>}
       </p>
     </div>
   )
@@ -27,6 +26,7 @@ function ArtSlot({ name, done }) {
 
 export default function FightLoading({ names, progress }) {
   const doneCount = [progress.verdict, progress.a, progress.b].filter(Boolean).length
+  const lit = Math.round((doneCount / 3) * SEGMENTS)
 
   return (
     <div className="fight-loading">
@@ -38,12 +38,9 @@ export default function FightLoading({ names, progress }) {
 
       <p className={`loading-verdict${progress.verdict ? ' is-done' : ''}`}>
         {progress.verdict ? (
-          <><Check /> Verdict is in</>
+          <><CheckIcon className="loading-check" /> Verdict is in</>
         ) : (
-          <>
-            The judge is deciding
-            <span className="loading-dots" aria-hidden="true"><i /><i /><i /></span>
-          </>
+          <>The judge is deciding<Cursor /></>
         )}
       </p>
 
@@ -55,7 +52,12 @@ export default function FightLoading({ names, progress }) {
         aria-valuemax={3}
         aria-valuenow={doneCount}
       >
-        <span className="loading-bar__fill" style={{ '--progress': doneCount / 3 }} />
+        {Array.from({ length: SEGMENTS }, (_, i) => (
+          <span
+            key={i}
+            className={`loading-bar__seg${i < lit ? ' is-on' : ''}${i === lit ? ' is-next' : ''}`}
+          />
+        ))}
       </div>
     </div>
   )

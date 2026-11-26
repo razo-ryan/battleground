@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { mockSettings } from '../api/index.js'
 import { storageSettings } from '../lib/storage.js'
+import { TitleBar } from './Window.jsx'
+import { ChipIcon } from './icons.jsx'
 
 // Dev-only panel for the mock API failure switches (see src/api/mockSettings.js),
 // plus the "BattleDex is full" switch from the storage layer.
@@ -50,62 +52,67 @@ export default function MockPanel() {
         {active && <span className="visually-hidden"> (failures on)</span>}
       </summary>
 
-      <div className="mock-panel__body">
-        <p className="mock-panel__note">Dev only. Applies to the next fight.</p>
+      <div className="mock-panel__window win win--idle">
+        <TitleBar title="Mock API" icon={<ChipIcon />} variant="idle" small controls={[]}>
+          <span className={`mock-panel__dot${active ? ' is-active' : ''}`} aria-hidden="true" />
+        </TitleBar>
+        <div className="mock-panel__body">
+          <p className="mock-panel__note">Dev only. Applies to the next fight.</p>
 
-        <label className="mock-panel__row">
-          <input
-            type="checkbox"
-            checked={failVerdict}
-            onChange={(e) => {
-              setFailVerdict(e.target.checked)
-              mockSettings.failVerdict = e.target.checked
-            }}
-          />
-          Fail every verdict
-        </label>
-
-        <fieldset className="mock-panel__group">
-          <legend>Refuse images</legend>
-          {[
-            ['off', 'Never'],
-            ['all', 'Every fighter'],
-            ['names', 'Only these fighters'],
-          ].map(([value, label]) => (
-            <label key={value} className="mock-panel__row">
-              <input
-                type="radio"
-                name="mock-refuse"
-                value={value}
-                checked={mode === value}
-                onChange={() => changeMode(value)}
-              />
-              {label}
-            </label>
-          ))}
-          {mode === 'names' && (
+          <label className="mock-panel__row">
             <input
-              className="input mock-panel__names"
-              type="text"
-              placeholder="Goku, 10 cows"
-              aria-label="Fighters whose images are refused, comma separated"
-              value={names}
-              onChange={(e) => changeNames(e.target.value)}
+              type="checkbox"
+              checked={failVerdict}
+              onChange={(e) => {
+                setFailVerdict(e.target.checked)
+                mockSettings.failVerdict = e.target.checked
+              }}
             />
-          )}
-        </fieldset>
+            Fail every verdict
+          </label>
 
-        <label className="mock-panel__row">
-          <input
-            type="checkbox"
-            checked={dexFull}
-            onChange={(e) => {
-              setDexFull(e.target.checked)
-              storageSettings.simulateFull = e.target.checked
-            }}
-          />
-          BattleDex is full
-        </label>
+          <fieldset className="mock-panel__group">
+            <legend>Refuse images</legend>
+            {[
+              ['off', 'Never'],
+              ['all', 'Every fighter'],
+              ['names', 'Only these fighters'],
+            ].map(([value, label]) => (
+              <label key={value} className="mock-panel__row">
+                <input
+                  type="radio"
+                  name="mock-refuse"
+                  value={value}
+                  checked={mode === value}
+                  onChange={() => changeMode(value)}
+                />
+                {label}
+              </label>
+            ))}
+            {mode === 'names' && (
+              <input
+                className="input mock-panel__names"
+                type="text"
+                placeholder="Goku, 10 cows"
+                aria-label="Fighters whose images are refused, comma separated"
+                value={names}
+                onChange={(e) => changeNames(e.target.value)}
+              />
+            )}
+          </fieldset>
+
+          <label className="mock-panel__row">
+            <input
+              type="checkbox"
+              checked={dexFull}
+              onChange={(e) => {
+                setDexFull(e.target.checked)
+                storageSettings.simulateFull = e.target.checked
+              }}
+            />
+            BattleDex is full
+          </label>
+        </div>
       </div>
     </details>
   )

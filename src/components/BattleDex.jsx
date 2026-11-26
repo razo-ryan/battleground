@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import FighterCard from './FighterCard.jsx'
+import Window from './Window.jsx'
+import { DexIcon } from './icons.jsx'
 import { useBattleDex } from '../hooks/useBattleDex.js'
 import { regenerateFighter } from '../lib/fighters.js'
 import { deleteCharacter } from '../lib/storage.js'
@@ -94,17 +96,17 @@ export default function BattleDex() {
   const count = characters.length
 
   return (
-    <section className="panel battledex" aria-labelledby="battledex-title">
-      <div className="panel__header">
-        <h2 id="battledex-title" className="panel__title">BattleDex</h2>
-        <span className="pill">{count} {count === 1 ? 'fighter' : 'fighters'}</span>
-      </div>
-
+    <Window
+      idle
+      className="battledex"
+      title="BattleDex"
+      titleId="battledex-title"
+      icon={<DexIcon />}
+      extra={<span className="pill">{count} {count === 1 ? 'fighter' : 'fighters'}</span>}
+    >
       {count === 0 ? (
         <div className="empty-state">
-          <div className="empty-state__card card-back" aria-hidden="true">
-            <span className="card-back__mark" />
-          </div>
+          <div className="empty-state__card card-back" aria-hidden="true" />
           <p className="empty-state__title">No fighters saved yet</p>
           <p>Run a fight, then press <strong>Save to BattleDex</strong> under a fighter to keep them here.</p>
         </div>
@@ -115,6 +117,6 @@ export default function BattleDex() {
           ))}
         </ul>
       )}
-    </section>
+    </Window>
   )
 }

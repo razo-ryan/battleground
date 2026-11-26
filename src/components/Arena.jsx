@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useFight } from '../hooks/useFight.js'
 import FightLoading from './FightLoading.jsx'
 import WinnerCard from './WinnerCard.jsx'
+import Window, { TitleBar } from './Window.jsx'
+import { AlertIcon, ExclaimIcon, SwordsIcon, WarningIcon } from './icons.jsx'
 import { NAME_MAX, SAME_FIGHTER_ERROR, validateFighters } from '../lib/validation.js'
 
 // Empty and too-short errors wait until the field is blurred, so they don't
@@ -30,7 +32,9 @@ function FighterField({ id, label, placeholder, value, onChange, onBlur, error, 
         aria-invalid={invalid}
         aria-describedby={error ? errorId : undefined}
       />
-      <p id={errorId} className="field__error" aria-live="polite">{error}</p>
+      <p id={errorId} className="field__error" aria-live="polite">
+        {error && <><ExclaimIcon className="field__error-icon" />{error}</>}
+      </p>
     </div>
   )
 }
@@ -40,12 +44,20 @@ function FighterField({ id, label, placeholder, value, onChange, onBlur, error, 
 // was disabled during loading, so focus would otherwise be lost.
 function FightError({ error, names, onRetry }) {
   return (
-    <div className="fight-error" role="alert">
-      <p className="fight-error__title">No verdict this time</p>
-      <p className="fight-error__message">{error.message}</p>
-      <button type="button" className="btn btn--primary fight-error__retry" onClick={onRetry} autoFocus>
-        Try again<span className="visually-hidden">: {names[0]} vs {names[1]}</span>
-      </button>
+    <div className="pop fight-error" role="alert">
+      <TitleBar title="Judge" icon={<AlertIcon />} variant="alert" small heading="span" controls={['close']} />
+      <div className="pop__body">
+        <WarningIcon className="pop__icon" />
+        <div>
+          <p className="pop__title">No verdict this time</p>
+          <p className="pop__msg">{error.message}</p>
+          <div className="pop__actions">
+            <button type="button" className="btn btn--primary" onClick={onRetry} autoFocus>
+              Try again<span className="visually-hidden">: {names[0]} vs {names[1]}</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -74,9 +86,12 @@ export default function Arena() {
   }
 
   return (
-    <section className="panel arena" aria-labelledby="arena-title">
-      <h2 id="arena-title" className="panel__title">Arena</h2>
-
+    <Window
+      className="arena"
+      title={isLoading ? 'Arena — fighting…' : 'Arena'}
+      titleId="arena-title"
+      icon={<SwordsIcon />}
+    >
       <form className="fight-form" onSubmit={handleSubmit} noValidate>
         <FighterField
           id="fighter-a"
@@ -121,6 +136,6 @@ export default function Arena() {
           {status === 'result' && <WinnerCard result={result} />}
         </div>
       )}
-    </section>
+    </Window>
   )
 }
